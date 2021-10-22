@@ -8,3 +8,6 @@ edition = "2018"
 [dependencies]
 ws="0.9.1"
 chrono="0.4.19"
+dotenv="0.15.0"
+dotenv_codegen="0.15.0"
+local_ipaddress="0.1.3"

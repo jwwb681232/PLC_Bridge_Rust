@@ -1,7 +1,10 @@
 extern crate ws;
 extern crate chrono;
+extern crate dotenv;
 
 use chrono::Local;
+use dotenv::dotenv;
+use local_ipaddress;
 
 struct Router {
     sender: ws::Sender,
@@ -49,6 +52,7 @@ impl ws::Handler for Router {
 }
 
 struct NotFound;
+
 impl ws::Handler for NotFound {
     fn on_request(&mut self, req: &ws::Request) -> ws::Result<ws::Response> {
         let mut res = ws::Response::from_request(req)?;
@@ -62,26 +66,28 @@ impl ws::Handler for NotFound {
 struct PLCSender {
     ws: ws::Sender,
 }
+
 impl ws::Handler for PLCSender {
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
-        println!("[{} System] Bluetooth sender connected",Local::now().format("%Y-%m-%d %H:%M:%S"));
+        println!("[{} System] Bluetooth sender connected", Local::now().format("%Y-%m-%d %H:%M:%S"));
         Ok(())
     }
 
     fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
-        println!("[{} Bluetooth sender] {}",Local::now().format("%Y-%m-%d %H:%M:%S"),msg);
+        println!("[{} Bluetooth sender] {}", Local::now().format("%Y-%m-%d %H:%M:%S"), msg);
         self.ws.broadcast(msg)
     }
 
     fn on_close(&mut self, _: ws::CloseCode, _: &str) {
-        println!("[{} System] Bluetooth sender closed",Local::now().format("%Y-%m-%d %H:%M:%S"));
+        println!("[{} System] Bluetooth sender closed", Local::now().format("%Y-%m-%d %H:%M:%S"));
     }
 }
 
 struct PLCReceiver;
+
 impl ws::Handler for PLCReceiver {
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
-        println!("[{} System] PLCReceiver connected",Local::now().format("%Y-%m-%d %H:%M:%S"));
+        println!("[{} System] PLCReceiver connected", Local::now().format("%Y-%m-%d %H:%M:%S"));
         Ok(())
     }
 
@@ -90,15 +96,28 @@ impl ws::Handler for PLCReceiver {
     }
 
     fn on_close(&mut self, _: ws::CloseCode, _: &str) {
-        println!("[{} System] PLCReceiver closed",Local::now().format("%Y-%m-%d %H:%M:%S"));
+        println!("[{} System] PLCReceiver closed", Local::now().format("%Y-%m-%d %H:%M:%S"));
     }
 }
 
 fn main() {
+    dotenv().ok();
 
-    println!("[{} System] Bridge server started on ws://127.0.0.1:3012",Local::now().format("%Y-%m-%d %H:%M:%S"));
+    let ip = dotenv::var("LAN_IP")
+        .unwrap_or(local_ipaddress::get().unwrap());
 
-    ws::listen("127.0.0.1:3012", |out| {
+    let port = dotenv::var("LAN_PORT")
+        .unwrap_or("3012".to_string());
+
+    println!("[{} System] Bridge server started\r\n\
+    PLCReceiver please connect to: ws://{}:{}\r\n\
+    Bluetooth sender please connect to: ws://{}:{}/sender",
+             Local::now().format("%Y-%m-%d %H:%M:%S"),
+             ip, port,
+             ip, port
+    );
+
+    ws::listen(format!("{}:{}", ip, port), |out| {
         Router {
             sender: out,
             inner: Box::new(PLCReceiver),
