@@ -1,5 +1,5 @@
 [package]
-name = "PLC_Bridge_Rust"
+name = "plc_bridge"
 version = "0.1.0"
 edition = "2018"
 
