@@ -1,3 +1,5 @@
+//#![windows_subsystem = "windows"]
+
 extern crate ws;
 extern crate chrono;
 extern crate dotenv;

@@ -2,15 +2,15 @@
 name = "plc_bridge"
 version = "0.1.0"
 edition = "2018"
-description = "Example for winres"
+description = "Presure Tess"
 authors = ["Wang Xiao <wx497657341@gmail.com>"]
 license = "MIT"
 build = "build.rs"
 
 [package.metadata.winres]
-LegalCopyright = "Copyright © 2016-2017"
+LegalCopyright = "Copyright © 2016-2021"
 
-FileDescription = "Example for \"winres\""
+FileDescription = "Presure Tess"
 
 [dependencies]
 winapi = { version = "0.3", features = ["winuser"] }
